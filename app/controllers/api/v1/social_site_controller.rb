@@ -4,19 +4,21 @@ module Api
 
       def responses
         @errors = []
-        all_tweets = get_social_site_data('https://takehome.io/twitter', "tweet")
-        all_statuses = get_social_site_data('https://takehome.io/facebook', "status")
-        all_pictures = get_social_site_data('https://takehome.io/instagram', "picture")
+        all_tweets = get_social_site_data(ENV["TWITTER_URL"], "tweet") # get response from TWITTER_URL
+        all_statuses = get_social_site_data(ENV["FACEBOOK_URL"], "status") # get response from FACEBOOK_URL
+        all_pictures = get_social_site_data(ENV["INSTAGRAM_URL"], "picture") # get response from INSTAGRAM_URL
         response = { twitter: all_tweets, facebook: all_statuses, instagram: all_pictures }
         if @errors.present?
-          render :json => { :errors => @errors }
+          render :json => { :errors => @errors, status: 400 }
         else
           render :json => response
         end
       end
 
+      private
+
       def get_social_site_data(url, data)
-        response = HTTParty.get(url)
+        response = HTTParty.get(url) 
         if response.ok?
           hash_response = parsed_json(response.body)
           hash_response.inject([]) do |resp, each_user|
